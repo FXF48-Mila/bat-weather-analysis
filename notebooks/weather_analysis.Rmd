@@ -1,0 +1,105 @@
+---
+title: "Bat_weather_project"
+author: "Liuyixin Shao"
+date: "2024-03-05"
+output: pdf_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = FALSE, warning = FALSE, message = FALSE, error = FALSE)
+setwd("C:/Users/MilaS/Desktop/bat-weather-project")
+library(tidyverse)
+```
+
+```{r}
+data <- read.csv("weather_clean_df.csv")
+```
+
+```{r}
+data <- data[data$number_of_detection > 0, ]
+```
+
+
+```{r}
+data$Location <- factor(data$Location)
+data_f <- data[-1]
+```
+
+```{r}
+print(colnames(data_f))
+```
+
+
+```{r}
+summary(data_f)
+
+library(GGally)
+data_f %>% select(number_of_detection, Location, Temperature, Sum.Rain,
+                  Mean.Wind.Speed, Phase) %>% ggpairs()
+```
+
+
+```{r}
+fit <- lm(number_of_detection ~ Location + Temperature + Sum.Rain + 
+                  Mean.Wind.Speed+ Phase, data = data_f)
+summary(fit)
+```
+```{r}
+data_f$log_num_bats <- log(data_f$number_of_detection)
+data_f$log_temp <- log(data_f$Temperature)
+data_f$log_sum_rain <- log(data_f$Sum.Rain)
+data_f$log_avg_wind <- log(data_f$Mean.Wind.Speed)
+```
+```{r}
+par(mfrow=c(2,2))
+hist(data_f$number_of_detection)
+hist(data_f$Temperature)
+hist(data_f$Sum.Rain)
+hist(data_f$Mean.Wind.Speed)
+```
+```{r}
+par(mfrow=c(2,2))
+hist(data_f$log_num_bats)
+hist(data_f$log_temp)
+hist(data_f$log_sum_rain)
+hist(data_f$log_avg_wind)
+```
+```{r}
+fit_log <- lm(log_num_bats ~ Location + log_temp +  
+                  log_avg_wind+ Phase, data = data_f)
+summary(fit_log)
+```
+
+```{r}
+par(mfrow=c(1, 2))
+plot(fit_log,which=1)
+plot(fit_log,which=2)
+```
+
+```{r}
+par(mfrow=c(1, 2))
+plot(fit,which=1)
+plot(fit,which=2)
+```
+
+```{r}
+data$datetime_column <- as.POSIXct(data$Datetime.UTC, format = "%Y-%m-%d %H:%M:%S")
+
+```
+```{r}
+ggplot(data, aes(x = datetime_column, y = number_of_detection, color = Location)) +
+  geom_line() +
+  labs(title = "Time Series of y with Location Categories",
+       x = "Date",
+       y = "y",
+       color = "Location")
+```
+
+```{r}
+ggplot(data, aes(x = , y = number_of_detection, color = Location)) +
+  geom_line() +
+  labs(title = "Time Series of y with Location Categories",
+       x = "Date",
+       y = "y",
+       color = "Location")
+```
